@@ -328,13 +328,15 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
   #---------- Define the cross-validation loss
   cv.loss.mat <- fitted.value.mat <- matrix(NA, nrow=K, ncol=length(lambda))
   loss.temp <- unlist(unlist(cross.res, recursive = FALSE), recursive = FALSE)
-  for(i in 1:K){ cv.loss.mat[i, 1:length(loss.temp[[1]][[i]]$loss.val) ] <- loss.temp[[1]][[i]]$loss.val}
-
+  for(i in 1:K){
+    cv.loss.mat[i, 1:length(loss.temp[[1]][[i]]$loss.val) ] <-
+      loss.temp[[1]][[i]]$loss.val
+    }
   ## Eliminate saturated lambda values, if any
-  #ind <- which(apply(is.finite(cv.loss.mat), 2, all))
-  #cv.loss.mat <- cv.loss.mat[,ind]
-  #fitted.value.mat <- fitted.value.mat[,ind]
-  #lambda <- fit.full$lambda[ind]
+  ind <- which(apply(is.finite(cv.loss.mat), 2, function(x){ sum(x) >= K/2 } ))
+  cv.loss.mat <- cv.loss.mat[,ind]
+  fitted.value.mat <- fitted.value.mat[,ind]
+  lambda <- lambda[ind]
   ## Return
   cve <- apply(cv.loss.mat, 2, function(x){mean(x, na.rm = T)})
   cvse <- apply(cv.loss.mat, 2, function(x){sd(x, na.rm = T)}) / sqrt(n)

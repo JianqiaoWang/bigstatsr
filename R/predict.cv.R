@@ -9,12 +9,9 @@
 #' @param proba Whether to return probabilities?
 #' @param base.row Vector of base predictions, corresponding to `ind.row`.
 #'
-#' @return A vector of scores, corresponding to `ind.row`.
+#' @return predicted response
 #'
 #' @export
-#' @importFrom stats predict
-#'
-#' @seealso [big_spLinReg] and [big_spLogReg].
 
 predict.cv <- function(object, X,
                        ind.row = rows_along(X),
@@ -55,7 +52,6 @@ predict.cv <- function(object, X,
   }
 
   return(pred)
-
 }
 
 
