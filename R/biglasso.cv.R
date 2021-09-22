@@ -338,10 +338,20 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
   fitted.value.mat <- fitted.value.mat[,ind]
   lambda <- lambda[ind]
   ## Return
-  cve <- apply(cv.loss.mat, 2, function(x){mean(x, na.rm = T)})
-  cvse <- apply(cv.loss.mat, 2, function(x){sd(x, na.rm = T)}) / sqrt(n)
-  min <- which.min(cve)
-
+  #cve <- apply(cv.loss.mat, 2, function(x){mean(x, na.rm = T)})
+  #cvse <- apply(cv.loss.mat, 2, function(x){sd(x, na.rm = T)}) / sqrt(n)
+  #min <- which.min(cve)
+  ind.na = apply(is.na(cv.loss.mat), 2, sum)
+  min = 0
+  for(h in 0:max(ind.na)){
+    cv.loss.mat.temp = cv.loss.mat[,which(ind.na <= h)]
+    cv.loss.mat.temp = cv.loss.mat.temp[complete.cases(cv.loss.mat.temp), ]
+    cve <- apply(cv.loss.mat.temp, 2, function(x){mean(x, na.rm = T)})
+    min.temp <- which.min(cve)
+    if(min.temp >= min) {
+      min = min.temp
+    }
+  }
 
   in.val <- (ind.sets.all != 1)
   time = system.time(
