@@ -27,7 +27,7 @@ double COPY_gLoss(const NumericVector& r) {
 
 // Coordinate descent for gaussian models
 template <class C>
-List COPY_cdfit_gaussian_hsr(C macc,
+List COPY_cdfit_gaussian_hsr2(C macc,
                              const NumericVector& y,
                              const NumericVector& lambda,
                              const NumericVector& center,
@@ -58,6 +58,7 @@ List COPY_cdfit_gaussian_hsr(C macc,
   NumericVector beta_max(p);
   NumericVector loss(L, NA_REAL);
   NumericVector metrics(L, NA_REAL);
+  NumericMatrix beta_mat( p , L);
   IntegerVector nb_candidate(L, NA_INTEGER);
   IntegerVector nb_active(L, NA_INTEGER);
 
@@ -142,6 +143,7 @@ List COPY_cdfit_gaussian_hsr(C macc,
     loss[l] = COPY_gLoss(r);
     nb_active[l]    = Rcpp::sum(beta_old != 0);
     nb_candidate[l] = Rcpp::sum(in_A);
+    beta_mat( _ , l ) = beta_old
 
     pred_val = predict(macc_val, beta_old, center, scale);
     metric = COPY_gLoss(pred_val - y_val);
@@ -160,12 +162,7 @@ List COPY_cdfit_gaussian_hsr(C macc,
     }
   }
 
-  if (no_change <= 1) {
-    return List::create(beta_old, loss, iter, metrics, "Complete path",
-                        nb_active, nb_candidate);
-  }
-
-  return List::create(beta_max, loss, iter, no_change, metrics, "Complete path",
+  return List::create(beta_max, loss, beta_mat, iter, metrics, "Complete path",
                       nb_active, nb_candidate);
 }
 

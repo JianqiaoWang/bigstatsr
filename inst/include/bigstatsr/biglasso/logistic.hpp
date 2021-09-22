@@ -240,6 +240,11 @@ List COPY_cdfit_binomial_hsr(C macc,
     }
   }
 
+  if (no_change <= 1) {
+    return List::create(beta0_old, beta_old,  Dev, iter, metrics, "Complete path",
+                        nb_active, nb_candidate);
+  }
+
   return List::create(beta0_max, beta_max, Dev, iter, metrics,
                       "Complete path", nb_active, nb_candidate);
 }
