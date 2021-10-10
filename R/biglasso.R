@@ -73,7 +73,7 @@ COPY_biglasso_part <- function(X, y.train, ind.train, ind.col, covar.train,
   assert_lengths(y.train, base.train, ind.train, rows_along(covar.train))
   assert_lengths(y.val, base.val, ind.val, rows_along(covar.val))
   assert_lengths(c(ind.col, cols_along(covar.train)), center, scale, resid)
-  stopifnot(length(intersect(ind.train, ind.val)) == 0)
+ # stopifnot(length(intersect(ind.train, ind.val)) == 0)
 
   ## fit model
   if (family == "gaussian") {
