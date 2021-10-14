@@ -213,30 +213,30 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
   #-------------------- first fit the model with all data ---------------------------
   K.all = 1
   ind.sets.all <- sample(rep_len(1:K.all, n))
-  summaries.covar <- summaries.cv(X, y_diff.train, ind.train, integer(0),
+  summaries.covar.full <- summaries.cv(X, y_diff.train, ind.train, integer(0),
                                ind.sets.all, K.all, covar.train)
 
-  list_summaries <- big_parallelize(
+  list_summaries.full <- big_parallelize(
     X, p.FUN = function(X, ind, y_diff.train, ind.train, ind.sets, K) {
       summaries.cv(X, y_diff.train, ind.train, ind, ind.sets, K)
     }, ncores = ncores, ind = ind.col, y_diff.train = y_diff.train,
     ind.train = ind.train, ind.sets = ind.sets.all, K = K.all)
 
-  keep <- do.call('c', lapply(list_summaries, function(x) x[["keep"]]))
-  pf.keep <- c(pf.X[keep], pf.covar)
+  keep.full <- do.call('c', lapply(list_summaries.full, function(x) x[["keep"]]))
+  pf.keep.full <- c(pf.X[keep.full], pf.covar)
   ## Merge summaries
-  center <- do.call('c', lapply(list_summaries, function(x) x[["center"]]))[keep]
-  scale  <- do.call('c', lapply(list_summaries, function(x) x[["scale"]]))[keep]
-  resid  <- do.call('c', lapply(list_summaries, function(x) x[["resid"]]))[keep]
+  center.full <- do.call('c', lapply(list_summaries.full, function(x) x[["center"]]))[keep.full]
+  scale.full  <- do.call('c', lapply(list_summaries.full, function(x) x[["scale"]]))[keep.full]
+  resid.full  <- do.call('c', lapply(list_summaries.full, function(x) x[["resid"]]))[keep.full]
   # keep.covar <- summaries.covar$keep ## should all be TRUE
-  center <- c(center, summaries.covar[["center"]])
-  scale  <- c(scale,  summaries.covar[["scale"]])
-  resid  <- c(resid,  summaries.covar[["resid"]])
-  pow_adapt = sort(power_adaptive)
-  pow_sc = power_scale
-  pf.keep2 <- pf.keep * scale^(pow_sc - 1)
-  pf.keep3 <- pf.keep2 * abs(resid / pf.keep2)^-pow_adapt
-  lambda.max <- max(abs(resid / pf.keep3)[pf.keep3 != 0]) /alphas
+  center.full <- c(center.full, summaries.covar.full[["center"]])
+  scale.full  <- c(scale.full,  summaries.covar.full[["scale"]])
+  resid.full  <- c(resid.full,  summaries.covar.full[["resid"]])
+  pow_adapt.full = sort(power_adaptive)
+  pow_sc.full = power_scale
+  pf.keep2.full <- pf.keep.full * scale^(pow_sc.full - 1)
+  pf.keep3.full <- pf.keep2.full * abs(resid.full / pf.keep2.full)^-pow_adapt.full
+  lambda.max <- max(abs(resid.full / pf.keep3.full)[pf.keep3.full != 0]) /alphas
   lambda <- exp(
     seq(log(lambda.max), log(lambda.max * lambda.min.ratio), length.out = nlambda)
     )
@@ -319,7 +319,7 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
 
   }
 
-  nb_novar <- sum(!keep)
+  nb_novar <- sum(!keep.full)
   if (nb_novar > 0)
     warning2("%d variable%s with low/no variation %s been removed.\n%s", nb_novar,
              `if`(nb_novar == 1, "", "s"), `if`(nb_novar == 1, "has", "have"),
@@ -358,9 +358,9 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
     fit.full <- COPY_biglasso_part(
       X, y.train = y.train,
       ind.train = ind.train[!in.val],
-      ind.col = ind.col[keep],
+      ind.col = ind.col[keep.full],
       covar.train = covar.train[!in.val, , drop = FALSE],
-      family, lambda = lambda[1:min], center, scale, resid,
+      family, lambda = lambda[1:min], center.full, scale.full, resid.full,
       alphas, eps, max.iter, dfmax,
       ind.val = ind.train[in.val],
       covar.val = covar.train[in.val, , drop = FALSE],
@@ -369,11 +369,11 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
       # base fitting
       base.train = base.train[!in.val],
       base.val = base.train[in.val],
-      pf.keep3
+      pf.keep3.full
     )
   )
-  fit.full$power_scale <- pow_sc
-  fit.full$power_adaptive <- pow_adapt
+  fit.full$power_scale <- pow_sc.full
+  fit.full$power_adaptive <- pow_adapt.full
   fit.full$time <- time[3]
   # Add first solution
   fit.full$intercept <- fit.full$intercept + beta0
