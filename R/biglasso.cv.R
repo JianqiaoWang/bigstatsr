@@ -392,7 +392,18 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
     base = base.train0
   )
 
-  if (warn && !all(summary(res)$all_conv))
+  cross.res <- structure(
+    unlist(unlist(cross.res, recursive = FALSE), recursive = FALSE),
+    class = "big_sp_list",
+    family = family,
+    alphas = alphas,
+    ind.col = ind.col[keep.full],
+    ind.sets = ind.sets,
+    pf = pf.keep.full,
+    base = base.train0
+  )
+
+  if (warn && !all(summary(cross.res)$all_conv))
     warning2("Some models may not have reached a minimum; %s",
              "check with summary() and plot().")
 
