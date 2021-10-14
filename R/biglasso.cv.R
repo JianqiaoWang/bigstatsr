@@ -234,7 +234,7 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
   resid.full  <- c(resid.full,  summaries.covar.full[["resid"]])
   pow_adapt.full = sort(power_adaptive)
   pow_sc.full = power_scale
-  pf.keep2.full <- pf.keep.full * scale^(pow_sc.full - 1)
+  pf.keep2.full <- pf.keep.full * scale.full^(pow_sc.full - 1)
   pf.keep3.full <- pf.keep2.full * abs(resid.full / pf.keep2.full)^-pow_adapt.full
   lambda.max <- max(abs(resid.full / pf.keep3.full)[pf.keep3.full != 0]) /alphas
   lambda <- exp(
