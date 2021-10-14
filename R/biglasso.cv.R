@@ -377,7 +377,7 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
   fit.full$time <- time[3]
   # Add first solution
   fit.full$intercept <- fit.full$intercept + beta0
-  fit.full$beta <- fit.full$beta + c(beta.X[keep], beta.covar)
+  fit.full$beta <- fit.full$beta + c(beta.X[keep.full], beta.covar)
   fit.full$cv.loss <- cv.loss.mat
 
 
@@ -386,9 +386,9 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
     class = "big_sp_list",
     family = family,
     alphas = alphas,
-    ind.col = ind.col[keep],
+    ind.col = ind.col[keep.full],
     ind.sets = ind.sets,
-    pf = pf.keep,
+    pf = pf.keep.full,
     base = base.train0
   )
 
