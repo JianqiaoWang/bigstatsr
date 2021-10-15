@@ -221,8 +221,22 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
       summaries.cv(X, y_diff.train, ind.train, ind, ind.sets, K)
     }, ncores = ncores, ind = ind.col, y_diff.train = y_diff.train,
     ind.train = ind.train, ind.sets = ind.sets.all, K = K.all)
-
   keep.full <- do.call('c', lapply(list_summaries.full, function(x) x[["keep"]]))
+
+
+  ## Parallelize over columns
+  list_summaries <- big_parallelize(
+    X, p.FUN = function(X, ind, y_diff.train, ind.train, ind.sets, K) {
+      summaries.cv(X, y_diff.train, ind.train, ind, ind.sets, K)
+    }, ncores = ncores, ind = ind.col, y_diff.train = y_diff.train,
+    ind.train = ind.train, ind.sets = ind.sets, K = K)
+   keep <- do.call('c', lapply(list_summaries, function(x) x[["keep"]]))
+
+   keep.full = keep # for consistency.
+
+
+
+
   pf.keep.full <- c(pf.X[keep.full], pf.covar)
   ## Merge summaries
   center.full <- do.call('c', lapply(list_summaries.full, function(x) x[["center"]]))[keep.full]
@@ -250,14 +264,8 @@ COPY_biglasso_main.cv <- function(X, y.train, ind.train, ind.col, covar.train,
   if (!all(summaries.covar$keep))
     stop("Please use covariables with some variation.")
 
-  ## Parallelize over columns
-  list_summaries <- big_parallelize(
-    X, p.FUN = function(X, ind, y_diff.train, ind.train, ind.sets, K) {
-      summaries.cv(X, y_diff.train, ind.train, ind, ind.sets, K)
-    }, ncores = ncores, ind = ind.col, y_diff.train = y_diff.train,
-    ind.train = ind.train, ind.sets = ind.sets, K = K)
 
-  keep <- do.call('c', lapply(list_summaries, function(x) x[["keep"]]))
+
   pf.keep <- c(pf.X[keep], pf.covar)
   alphas <- sort(alphas)
 
